@@ -2,8 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 
 	"github.com/21toffy/relational-restaurant/database"
 	_ "gorm.io/driver/postgres"
@@ -34,8 +32,6 @@ func GetAllOrderItem(order_item *[]OrderItem) (err error) {
 	if err = database.DB.Find(order_item).Error; err != nil {
 		return err
 	}
-	fmt.Println(reflect.TypeOf(order_item), "this is the type of 11111111111111111111111111111111")
-
 	return nil
 }
 
@@ -43,6 +39,5 @@ func GetOrderItemsByOrder(order_uid string, order_item *[]OrderItem) error {
 	if err := database.DB.Model(OrderItem{}).Where("order_id <> ?", order_uid).Find(order_item).Error; err != nil {
 		return errors.New("Order not found!")
 	}
-	fmt.Println(reflect.TypeOf(order_item), "this is the type of 00000000000000000")
 	return nil
 }
