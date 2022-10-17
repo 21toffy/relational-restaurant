@@ -44,6 +44,6 @@ func main() {
 	routes.OrderItemRoutes(router)
 	routes.OrderRoutes(router)
 
-	router.Run(":8080")
+	router.Run(":8082")
 
 }

@@ -11,10 +11,10 @@ func OrderItemRoutes(incommingRoutes *gin.Engine) {
 
 	private := incommingRoutes.Group("/api").Use(middleware.JwtAuthMiddleware())
 
-	public.GET("/orderItems", controller.GetOrderItems())
+	public.GET("/order-items", controller.GetOrderItems())
 	public.POST("/orderItems", controller.CreateOrderItem())
 	public.GET("/orderItems/:orderItem_id", controller.GetOrderItem())
-	public.GET("/orderItems-order/order_id", controller.GetOrderItemsByOrder())
+	public.GET("/order-items-order/:order_id", controller.GetOrderItemsByOrder())
 	private.PATCH("/orderItems/:orderItem_id", controller.UpdateOrderItem())
 
 }
