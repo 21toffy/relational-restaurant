@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/21toffy/relational-restaurant/database"
@@ -44,4 +45,12 @@ func GetAllFoods(food *[]Food) (err error) {
 
 	}
 	return nil
+}
+
+func GetFoodByID(uid int) (Food, error) {
+	var food Food
+	if err := database.DB.Model(Food{}).Where("id = ?", uid).Take(&food).Error; err != nil {
+		return food, errors.New("Food not found!")
+	}
+	return food, nil
 }

@@ -9,13 +9,13 @@ import (
 
 type OrderItem struct {
 	Base
-	Order_Item_id string  `json:"table_id" `
+	Order_Item_id string  `json:"order_item_id" `
 	Size          string  `json:"size" validate:"required,eq=S|eq=M|eq=L"`
 	Quantity      int64   `json:"quantity" validate:"required,min=1"`
 	Unit_price    float64 `json:"unit_price" validate:"required"`
 
-	FoodId  int `gorm:"default:null;"`
-	OrderId int `gorm:"default:null;"`
+	FoodId  int `json:"food_id" gorm:"default:null;"`
+	OrderId int `json:"order_id" gorm:"default:null;"`
 
 	Food  Food  `json:"food" gorm:"embedded;;embeddedPrefix:order_item_food_ ;foreignKey:Food;association_foreignkey:ID" `
 	Order Order `json:"order" gorm:"embedded;;embeddedPrefix:order_item_order_ ;foreignKey:Order;association_foreignkey:ID"`
@@ -36,7 +36,10 @@ func GetAllOrderItem(order_item *[]OrderItem) (err error) {
 }
 
 func GetOrderItemsByOrder(order_uid string, order_item *[]OrderItem) error {
-	if err := database.DB.Model(OrderItem{}).Where("order_id <> ?", order_uid).Find(order_item).Error; err != nil {
+
+	m := make(map[string]interface{})
+	m["order_id"] = order_uid
+	if err := database.DB.Where(m).Find(order_item).Error; err != nil {
 		return errors.New("Order not found!")
 	}
 	return nil

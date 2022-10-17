@@ -12,7 +12,7 @@ func FoodRoutes(incommingRoutes *gin.Engine) {
 	private := incommingRoutes.Group("/api").Use(middleware.JwtAuthMiddleware())
 
 	public.GET("/foods", controller.GetFoods())
-	private.GET("/foods/:food_id", controller.GetFood())
-	private.POST("/food", controller.CreateFood())
+	public.GET("/foods/:food_id", controller.GetFood())
+	public.POST("/food", controller.CreateFood())
 	private.PATCH("/foods/:food_id", controller.UpdateFood())
 }

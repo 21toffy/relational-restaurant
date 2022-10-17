@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/21toffy/relational-restaurant/database"
@@ -24,7 +26,15 @@ func CreateOrder(order *Order) (err error) {
 func GetAllOrders(order *[]Order) (err error) {
 	if err = database.DB.Find(order).Error; err != nil {
 		return err
-
 	}
 	return nil
+}
+
+func GetOrderByID(uid int) (Order, error) {
+	var order Order
+	if err := database.DB.Model(Order{}).Where("id = ?", uid).Take(&order).Error; err != nil {
+		fmt.Print("000000000000000000000000000____", err, uid, "____000000000000000000000000")
+		return order, errors.New("order not found")
+	}
+	return order, nil
 }
