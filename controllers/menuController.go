@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/21toffy/relational-restaurant/helpers"
 	"github.com/21toffy/relational-restaurant/models"
@@ -37,6 +38,15 @@ func CreateMenu() gin.HandlerFunc {
 
 func GetMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		menuId, _ := strconv.Atoi(c.Param("menu_id"))
+		var menu models.Menu
+		menu, err := models.GetMenuByID(menuId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, menu)
+		return
 
 	}
 }

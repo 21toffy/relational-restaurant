@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/21toffy/relational-restaurant/helpers"
@@ -41,6 +42,16 @@ func GetOrders() gin.HandlerFunc {
 
 func GetOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		orderId, _ := strconv.Atoi(c.Param("order_id"))
+		orderData, err := models.GetOrderByID(orderId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, orderData)
+		return
+
 	}
 }
 

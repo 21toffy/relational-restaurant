@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/21toffy/relational-restaurant/helpers"
@@ -68,47 +69,47 @@ func GetOrderItemsByOrder() gin.HandlerFunc {
 }
 func GetOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		getOrderId, _ := strconv.Atoi(c.Param("order-item-id"))
+		var orderItem models.OrderItem
+		orderItem, err := models.GetOrderItemsByID(getOrderId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, orderItem)
+		return
 	}
 }
 
 func CreateOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input OrderItemCreate
-
 		c.BindJSON(&input)
 		if input.Size == "" || input.Quantity <= 0 || input.Unit_price <= 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "size, quantity, unit price fields can not be empty"})
 			return
 		}
-
 		order, err := models.GetOrderByID(input.OrderId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
 		food, err := models.GetFoodByID(input.FoodId)
-
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
 		orderItem := models.OrderItem{
 			Order_Item_id: helpers.GenerateUUID(),
 			Size:          input.Size,
 			Quantity:      input.Quantity,
 			Unit_price:    input.Unit_price,
-
-			FoodId:  input.FoodId,
-			OrderId: input.OrderId,
-			Order:   order,
-			Food:    food,
+			FoodId:        input.FoodId,
+			OrderId:       input.OrderId,
+			Order:         order,
+			Food:          food,
 		}
-
 		errors := models.CreateOrderItem(&orderItem)
-
 		if errors != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": errors.Error()})
 			return

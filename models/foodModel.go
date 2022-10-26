@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -25,13 +26,6 @@ func (b *Food) TableName() string {
 	return "food"
 }
 
-// func CreateFood(food *Food) (err error) {
-// 	if err = database.DB.Create(food).Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 func CreateFood(food *Food) (err error) {
 	if err = database.DB.Create(food).Error; err != nil {
 		return err
@@ -49,7 +43,9 @@ func GetAllFoods(food *[]Food) (err error) {
 
 func GetFoodByID(uid int) (Food, error) {
 	var food Food
-	if err := database.DB.Model(Food{}).Where("id = ?", uid).Take(&food).Error; err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	if err := database.DB.WithContext(ctx).Model(Food{}).Where("id = ?", uid).Take(&food).Error; err != nil {
 		return food, errors.New("Food not found!")
 	}
 	return food, nil

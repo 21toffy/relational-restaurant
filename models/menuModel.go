@@ -1,6 +1,10 @@
 package models
 
 import (
+	"context"
+	"errors"
+	"time"
+
 	"github.com/21toffy/relational-restaurant/database"
 	_ "gorm.io/driver/postgres"
 )
@@ -25,4 +29,14 @@ func GetAllMenus(menu *[]Menu) (err error) {
 
 	}
 	return nil
+}
+
+func GetMenuByID(uid int) (Menu, error) {
+	var menu Menu
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	if err := database.DB.WithContext(ctx).Model(Menu{}).Where("id = ?", uid).Take(&menu).Error; err != nil {
+		return menu, errors.New("Menu not found!")
+	}
+	return menu, nil
 }

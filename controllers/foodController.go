@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/21toffy/relational-restaurant/helpers"
 	"github.com/21toffy/relational-restaurant/models"
@@ -28,7 +29,15 @@ func GetFoods() gin.HandlerFunc {
 
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		foodId, _ := strconv.Atoi(c.Param("food_id"))
+		var food models.Food
+		food, err := models.GetFoodByID(foodId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, food)
+		return
 	}
 }
 

@@ -9,7 +9,7 @@ func MenuRoutes(incommingRoutes *gin.Engine) {
 	public := incommingRoutes.Group("/api")
 	// private := incommingRoutes.Group("/api").Use(middleware.JwtAuthMiddleware())
 	public.GET("/menus", controller.GetMenus())
-	public.GET("/menus/:menu_id", controller.GetMenu())
+	public.GET("/menu/:menu_id", controller.GetMenu())
 	public.POST("/menus", controller.CreateMenu())
 	public.PATCH("/menus/:menu_id", controller.UpdateMenu())
 

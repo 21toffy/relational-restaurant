@@ -1,7 +1,9 @@
 package models
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/21toffy/relational-restaurant/database"
 	_ "gorm.io/driver/postgres"
@@ -43,4 +45,24 @@ func GetOrderItemsByOrder(order_uid string, order_item *[]OrderItem) error {
 		return errors.New("Order not found!")
 	}
 	return nil
+}
+
+// func GetOrderTableByID(uid int) (OrderItem, error) {
+// 	var orderItem OrderItem
+// 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+// 	defer cancel()
+// 	if err := database.DB.WithContext(ctx).Model(OrderItem{}).Where("id = ?", uid).Take(&orderItem).Error; err != nil {
+// 		return _, errors.New("orderItem not found!")
+// 	}
+// 	return orderItem, nil
+// }
+
+func GetOrderItemsByID(uid int) (OrderItem, error) {
+	var orderItem OrderItem
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	if err := database.DB.WithContext(ctx).Model(OrderItem{}).Where("id = ?", uid).Take(&orderItem).Error; err != nil {
+		return orderItem, errors.New("orderItem not found!")
+	}
+	return orderItem, nil
 }
