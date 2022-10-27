@@ -29,9 +29,18 @@ func GetAllOrders(order *[]Order) (err error) {
 	return nil
 }
 
-func GetOrderByID(uid int) (Order, error) {
+func GetOrderByID(id int) (Order, error) {
 	var order Order
-	if err := database.DB.Model(Order{}).Where("id = ?", uid).Take(&order).Error; err != nil {
+	if err := database.DB.Model(Order{}).Where("id = ?", id).Take(&order).Error; err != nil {
+
+		return order, errors.New("order not found")
+	}
+	return order, nil
+}
+
+func GetOrderByUID(uid string) (Order, error) {
+	var order Order
+	if err := database.DB.Model(Order{}).Where("order_id = ?", uid).Take(&order).Error; err != nil {
 
 		return order, errors.New("order not found")
 	}

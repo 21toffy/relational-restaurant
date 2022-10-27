@@ -33,6 +33,7 @@ func main() {
 	database.DB.AutoMigrate(&models.Menu{})
 	database.DB.AutoMigrate(&models.OrderItem{})
 	database.DB.AutoMigrate(&models.Order{})
+	database.DB.AutoMigrate(&models.Invoice{})
 
 	router := gin.New()
 	router.Use(gin.Logger())
@@ -43,6 +44,7 @@ func main() {
 	routes.MenuRoutes(router)
 	routes.OrderItemRoutes(router)
 	routes.OrderRoutes(router)
+	routes.InvoiceRoutes(router)
 
 	router.Run(":8082")
 

@@ -30,11 +30,21 @@ func GetAllTables(table *[]Table) (err error) {
 	return nil
 }
 
-func GetTableByID(uid int) (Table, error) {
+func GetTableByID(id int) (Table, error) {
 	var table Table
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
-	if err := database.DB.WithContext(ctx).Model(Table{}).Where("id = ?", uid).Take(&table).Error; err != nil {
+	if err := database.DB.WithContext(ctx).Model(Table{}).Where("id = ?", id).Take(&table).Error; err != nil {
+		return table, errors.New("orderItem not found!")
+	}
+	return table, nil
+}
+
+func GetTableByUID(uid string) (Table, error) {
+	var table Table
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	if err := database.DB.WithContext(ctx).Model(Table{}).Where("table_id = ?", uid).Take(&table).Error; err != nil {
 		return table, errors.New("orderItem not found!")
 	}
 	return table, nil
