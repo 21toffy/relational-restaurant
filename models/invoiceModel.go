@@ -17,6 +17,7 @@ type Invoice struct {
 	Payment_due_date time.Time `json:"payment_due_date,omitempty"`
 	Created_at       time.Time `json:"created_at"`
 	Updated_at       time.Time `json:"updated_at"`
+	Deleted          bool      `gorm:"default:false;"`
 }
 
 func (b *Invoice) TableName() string {
@@ -42,7 +43,7 @@ func GetInvoiceByID(uid int) (Invoice, error) {
 	var invoice Invoice
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
-	if err := database.DB.WithContext(ctx).Model(Invoice{}).Where("id = ?", uid).Take(&invoice).Error; err != nil {
+	if err := database.DB.WithContext(ctx).Model(Invoice{}).Where("id = ?  AND deleted = ?", uid, false).Take(&invoice).Error; err != nil {
 		return invoice, errors.New("Invoice not found!")
 	}
 	return invoice, nil
