@@ -1,11 +1,14 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/21toffy/relational-restaurant/database"
 	"github.com/21toffy/relational-restaurant/helpers"
 	"github.com/21toffy/relational-restaurant/models"
 	"github.com/gin-gonic/gin"
@@ -46,10 +49,18 @@ type FoodStruct struct {
 	Price       *float64 `json:"price" binding:"required"`
 	Description *string  `json:"description" binding:"required"`
 	Food_image  *string  `json:"food_image" binding:"required"`
-	Created_by  models.User
-	Created_at  string
-	Updated_at  string
-	Food_id     string
+	// Created_by  models.User
+	Created_at string
+	Updated_at string
+	Food_id    string
+}
+
+type FoodUpdateStruct struct {
+	Name        *string  `json:"name" binding:"required"`
+	Price       *float64 `json:"price" binding:"required"`
+	Description *string  `json:"description" binding:"required"`
+	Food_image  *string  `json:"food_image" binding:"required"`
+	Updated_at  time.Time
 }
 
 func CreateFood() gin.HandlerFunc {
@@ -93,14 +104,60 @@ func CreateFood() gin.HandlerFunc {
 	}
 }
 
-// func CreateFood() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-
-// 	}
-// }
-
 func UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Get model if exist
+		foodId, _ := strconv.Atoi(c.Param("food_id"))
+		var food models.Food
+		food, err := models.GetFoodByID(foodId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Validate input
+		var input FoodUpdateStruct
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		if err := database.DB.WithContext(ctx).Model(&food).Updates(models.Food{
+			Name:        input.Name,
+			Price:       input.Price,
+			Description: input.Description,
+			Food_image:  input.Food_image,
+			Updated_at:  helpers.GetCurrentTime(),
+		}).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": input})
+		return
+
+	}
+}
+
+func DeleteFood() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Get model if exist
+		foodId, _ := strconv.Atoi(c.Param("food_id"))
+		var food models.Food
+		food, err := models.GetFoodByID(foodId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		if err := database.DB.WithContext(ctx).Model(food).Updates(models.Food{Deleted: true}).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusNoContent, gin.H{})
+		return
 
 	}
 }
