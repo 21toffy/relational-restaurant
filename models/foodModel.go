@@ -10,7 +10,7 @@ import (
 )
 
 type Food struct {
-	Id          uint        `json:"id" gorm:"primary_key"`
+	Id          int         `json:"id" gorm:"primary_key"`
 	Name        *string     `json:"name" validate:"required,min=3, max=50"`
 	Price       *float64    `json:"price" validation:"required"`
 	Description *string     `json:"food_description" gorm:"size:255;not null"`
@@ -19,7 +19,8 @@ type Food struct {
 	Updated_at  time.Time   `json:"updated_at"`
 	Food_id     string      `json:"food_id" `
 	UserId      int         `gorm:"default:null;"`
-	User        UserDisplay `json:"user" gorm:"embedded;;embeddedPrefix:created_ ;foreignKey:UserId;association_foreignkey:ID"`
+	User        UserDisplay `json:"user" gorm:"embedded;embeddedPrefix:created_ ;foreignKey:UserId;association_foreignkey:ID"`
+	Deleted     bool        `gorm:"default:false;"`
 }
 
 func (b *Food) TableName() string {
@@ -45,7 +46,7 @@ func GetFoodByID(uid int) (Food, error) {
 	var food Food
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
-	if err := database.DB.WithContext(ctx).Model(Food{}).Where("id = ?", uid).Take(&food).Error; err != nil {
+	if err := database.DB.WithContext(ctx).Model(Food{}).Where("id = ? AND deleted = ?", uid, false).Take(&food).Error; err != nil {
 		return food, errors.New("Food not found!")
 	}
 	return food, nil
