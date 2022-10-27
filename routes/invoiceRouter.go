@@ -17,5 +17,6 @@ func InvoiceRoutes(incommingRoutes *gin.Engine) {
 	public.GET("/invoices/filter/:get_by_status_or_method", controller.GetInvoiceByStatusOrMethod())
 	public.POST("/invoices", controller.CreateInvoice())
 	private.PATCH("/invoices/:invoice_id", controller.UpdateInvoice())
+	public.DELETE("/invoice/delete/:invoice_id", controller.DeleteInvoice())
 
 }

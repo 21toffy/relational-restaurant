@@ -13,6 +13,8 @@ func FoodRoutes(incommingRoutes *gin.Engine) {
 
 	public.GET("/foods", controller.GetFoods())
 	public.GET("/foods/:food_id", controller.GetFood())
-	public.POST("/food", controller.CreateFood())
-	private.PATCH("/foods/:food_id", controller.UpdateFood())
+	private.POST("/food", controller.CreateFood())
+	public.PATCH("/foods/:food_id", controller.UpdateFood())
+	public.DELETE("/foods/:food_id", controller.DeleteFood())
+
 }
