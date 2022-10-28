@@ -11,4 +11,5 @@ type Base struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time `sql:"index"`
+	Deleted   bool       `gorm:"default:false;"`
 }
