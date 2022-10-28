@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/21toffy/relational-restaurant/database"
 	"github.com/21toffy/relational-restaurant/helpers"
 	"github.com/21toffy/relational-restaurant/models"
 	"github.com/gin-gonic/gin"
@@ -31,6 +33,15 @@ type InvoiceCreate struct {
 	Table_number     int64
 	Payment_due_date time.Time `json:"payment_due_date,omitempty"`
 	Created_at       time.Time
+	Updated_at       time.Time
+}
+
+type InvoiceUpdate struct {
+	Order_id         string
+	Payment_method   string
+	Payment_status   string
+	Payment_due      time.Time
+	Payment_due_date time.Time `json:"payment_due_date,omitempty"`
 	Updated_at       time.Time
 }
 
@@ -81,12 +92,6 @@ func GetInvoiceByStatusOrMethod() gin.HandlerFunc {
 	}
 }
 
-func UpdateInvoice() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-	}
-}
-
 func CreateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input InvoiceCreate
@@ -132,21 +137,21 @@ func GetInvoice() gin.HandlerFunc {
 		invoice, err := models.GetInvoiceByID(invoiceId)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		orderData, err := models.GetOrderByUID(orderId)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		tableData, err := models.GetTableByUID(*orderData.Table_id)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -163,5 +168,65 @@ func GetInvoice() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, invoice_details)
 		return
+	}
+}
+
+func DeleteInvoice() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		invoiceId, _ := strconv.Atoi(c.Param("invoice_id"))
+		var invoice models.Invoice
+		invoice, err := models.GetInvoiceByID(invoiceId)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		if err := database.DB.WithContext(ctx).Model(invoice).Updates(models.Invoice{Deleted: true}).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusNoContent, gin.H{})
+		return
+
+	}
+}
+
+func UpdateInvoice() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		invoiceId, _ := strconv.Atoi(c.Param("invoice_id"))
+		var input InvoiceUpdate
+		invoiceData, err := models.GetInvoiceByID(invoiceId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		// Validate input
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if input.Order_id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": " Order ID can not be empty"})
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		if err := database.DB.WithContext(ctx).Model(&invoiceData).Updates(models.Invoice{
+			Order_id:         input.Order_id,
+			Payment_method:   &input.Payment_method,
+			Payment_status:   &input.Payment_status,
+			Payment_due_date: input.Payment_due_date,
+			Updated_at:       helpers.GetCurrentTime(),
+		}).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": input})
+		return
+
 	}
 }
